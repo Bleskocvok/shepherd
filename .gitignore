@@ -1,3 +1,5 @@
 # very important to keep that secret a secret
 secret*
 
+data
+*pycache*

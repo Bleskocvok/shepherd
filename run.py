@@ -5,117 +5,118 @@ import discord
 import asyncio
 from discord.ext import commands
 
-import perform
+# my imports
+from database import Database
+from scheduler import Scheduler
 
 
-loop = asyncio.get_event_loop()
+class MyCog(commands.Cog):
+    messages = {
+        'scheduled' : '```Scheduled exercise for {} in channel {}```',
+        'cancelled' : '```Cancelled scheduled exercise for channel {}```',
+        'invalid_time' : '```Incorrect time format\nCorrect format is \'XX:XX\'```',
+        'status' : '```Scheduled for {}:{}```',
+        'not_status' : '```Not scheduled```',
+    }
 
+    def __init__(self, bot, database : Database):
+        self.bot = bot
+        self.database = database
+        self.scheduler = Scheduler()
 
-def job(chn : discord.TextChannel):
-    # some coroutine hackery
-    future  = asyncio.run_coroutine_threadsafe(chn.send('@everyone Exercise time!'), loop)
-    future.result()
+    def job(self, ID):
+        chn = self.bot.get_channel(ID)
+        if chn is None:
+            return
+        # some coroutine hackery, so that this function (job) doesn't have to be async
+        future  = asyncio.run_coroutine_threadsafe(chn.send('@everyone Exercise time!'), self.loop)
+        future.result()
 
+    @commands.Cog.listener()
+    async def on_ready(self):
+        print('Connected as {}'.format(self.bot.user.name))
+        # add already scheduled notifs
+        for ID, t in self.database.get_channels().items():
+            self.scheduler.add(ID, t, self.job)
+        self.scheduler.run()
+        # load this thing (it's needed)
+        self.loop = asyncio.get_event_loop()
 
-def correct_time(time):
-    nums = '0123456789'
-    if len(time) != 5 or time[2] != ':':
-        return False
-    if not time[0] in nums:
-        return False
-    if not time[1] in nums:
-        return False
-    if not time[3] in nums:
-        return False
-    if not time[4] in nums:
-        return False
-    return True
+    @commands.command(help='Schedules a time for exercise')
+    async def schedule(self, ctx, time):
+        time = time.strip()
+        if time[len(time) - 1] == '\n':
+            time = time[:len(time) - 1]
+        if not self.correct_time(time):
+            await ctx.send(MyCog.messages['invalid_time'])
+            return
+        t = (int(time[0:2]), int(time[3:5]))
+        ID = ctx.message.channel.id
+        self.database.set_channel(ID, t)
+        self.scheduler.add(ID, t, self.job)
+        await ctx.send(MyCog.messages['scheduled'].format(time, ctx.message.channel.name))
 
+    @commands.command(help='Cancels scheduled exercise')
+    async def cancel(self, ctx):
+        ID = ctx.message.channel.id
+        self.database.remove_channel(ID)
+        self.scheduler.remove(ID)
+        await ctx.send(MyCog.messages['cancelled'].format(ctx.message.channel.name))
 
-def save(time : str, ID : int):
-    with open('data/time.txt', 'w') as file:
-        file.write(time + '\n')
-        file.write(str(ID) + '\n')
+    @commands.command(help='Prints current schedule')
+    async def status(self, ctx):
+        ID = ctx.message.channel.id
+        found = self.database.get_channels().get(ID, None)
+        if not found is None:
+            h, m = found
+            await ctx.send(MyCog.messages['status'].format(h, m))
+        else:
+            await ctx.send(MyCog.messages['not_status'])
 
-
-def load():
-    with open('data/time.txt', 'a') as file:
+    @commands.command(help='[To be done] Stores the number of pushups you did')
+    async def did(self, ctx, count : int):
         pass
-    with open('data/time.txt', 'r') as file:
-        lines = file.readlines()
-        if (len(lines) >= 2):
-            return (lines[0].strip(), int(lines[1].strip()))
-    return (None, None)
 
+    @commands.command(help='[To be done]')
+    async def stats(self, ctx, name):
+        pass
+
+    def correct_time(self, time):
+        nums = '0123456789'
+        if len(time) != 5 or time[2] != ':':
+            return False
+        if not time[0] in nums:
+            return False
+        if not time[1] in nums:
+            return False
+        if not time[3] in nums:
+            return False
+        if not time[4] in nums:
+            return False
+        return True
 
 '''
 MAIN
 '''
+# load Discord token from file 'secret_token.txt'
 token = ''
 with open('secret_token.txt', 'r') as f:
     token = f.read().strip()
 
-client = commands.Bot(command_prefix='!')
-
-# initialize the object to perform the actions
-per = perform.Perform()
-
+# create folder 'data/' if it doesn't exist
 if not os.path.isdir('./data'):
     os.mkdir('data')
 
+# load saved data
+data = Database()
 
-'''
-ASYNC CALLBACKS
-'''
-@client.event
-async def on_ready():
-    print('{} connected'.format(client.user.name))
-    time, ID = load()
-    channel = client.get_channel(ID)
-    if (time != None and channel != None):
-        per.scheduler(time)(job, channel)
-
-
-@client.command(name='schedule', help='Schedules a time for exercise')
-async def schedule(ctx, time):
-    time = time.strip()
-    if time[len(time) - 1] == '\n':
-        time = time[:len(time) - 1]
-    if not correct_time(time):
-        await ctx.send('```Incorrect time format\nCorrect format is \'XX:XX\'```')
-        return
-    save(time, ctx.message.channel.id)
-    per.scheduler(time)(job, ctx.message.channel)
-    await ctx.send('```Scheduled exercise for {} in channel {}```'.format(time, ctx.message.channel.name))
-
-
-@client.command(name='did', help='[To be done] Stores the number of pushups you did')
-async def did(ctx, count : int):
-    pass
-
-
-@client.command(name='cancel', help='Cancels scheduled exercise')
-async def cancel(ctx):
-    per.cancel()
-    save('', 0)
-    await ctx.send('```Cancelled scheduled exercise for channel {}```'.format(ctx.message.channel.name))
-
-
-@client.command(name='stats', help='[To be done]')
-async def stats(ctx, name):
-    pass
-
+# start the client
+client = commands.Bot(command_prefix='!')
+client.add_cog(MyCog(client, data))
+client.run(token)
 
 '''
 @client.event
 async def on_command_error(ctx, error):
     print(error)
 '''
-
-
-'''
-START
-'''
-client.run(token)
-
-
