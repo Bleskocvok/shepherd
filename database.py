@@ -33,8 +33,9 @@ class Database:
 
     def edit_last_stats(self, ID, value):
         stats = self.get_user_stats(ID)
-        if len() > 0:
+        if len(stats) > 0:
             stats[-1] = value
+            self.save(self.users, 'users.txt')
 
     def save(self, struct, fname):
         with open(self.folder + "/" + fname, 'w') as f:

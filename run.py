@@ -28,6 +28,9 @@ class MyCog(commands.Cog):
         chn = self.bot.get_channel(ID)
         if chn is None:
             return
+        # add zero for all current members
+        for mem in chn.members:
+            self.database.add_user_stats(mem.id, 0)
         # some coroutine hackery, so that this function (job) doesn't have to be async
         future  = asyncio.run_coroutine_threadsafe(chn.send('@everyone Exercise time!'), self.loop)
         future.result()
@@ -75,7 +78,8 @@ class MyCog(commands.Cog):
 
     @commands.command(help='Stores the number of pushups you did')
     async def did(self, ctx, count : int):
-        self.database.add_user_stats(ctx.message.author.id, count)
+        # set last value to count
+        self.database.edit_last_stats(ctx.message.author.id, count)
 
     @commands.command(help='Shows stats for a user')
     async def stats(self, ctx, username=''):
