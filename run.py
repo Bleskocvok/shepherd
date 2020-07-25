@@ -98,7 +98,7 @@ async def did(ctx, count : int):
 async def cancel(ctx):
     per.cancel()
     save('', 0)
-    await ctx.send('```Cancelled scheduled exercise for in channel {}```'.format(ctx.message.channel.name))
+    await ctx.send('```Cancelled scheduled exercise for channel {}```'.format(ctx.message.channel.name))
 
 
 @client.command(name='stats', help='[To be done]')
