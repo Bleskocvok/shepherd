@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import os
 import discord
 import asyncio
 from discord.ext import commands
@@ -103,12 +102,8 @@ token = ''
 with open('secret_token.txt', 'r') as f:
     token = f.read().strip()
 
-# create folder 'data/' if it doesn't exist
-if not os.path.isdir('./data'):
-    os.mkdir('data')
-
 # load saved data
-data = Database()
+data = Database('data')
 
 # start the client
 client = commands.Bot(command_prefix='!')
