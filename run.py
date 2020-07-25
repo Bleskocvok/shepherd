@@ -11,12 +11,15 @@ from scheduler import Scheduler
 
 class MyCog(commands.Cog):
     messages = {
-        'scheduled' : '```Scheduled exercise for {} in channel {}```',
+        'scheduled' : '```Scheduled exercise for {} in channel #{}```',
         'cancelled' : '```Cancelled scheduled exercise for channel {}```',
         'invalid_time' : '```Incorrect time format\nCorrect format is \'XX:XX\'```',
         'status' : '```Scheduled for {}:{}```',
         'not_status' : '```Not scheduled```',
         'stats' : '```{} | {}```',
+
+        # was kinda difficult to find how to use emoji reactions
+        'did_reaction' : '\N{FLEXED BICEPS}',
     }
 
     def __init__(self, bot, database : Database):
@@ -80,6 +83,10 @@ class MyCog(commands.Cog):
     async def did(self, ctx, count : int):
         # set last value to count
         self.database.edit_last_stats(ctx.message.author.id, count)
+        # add funny reaction :)
+        requested = MyCog.messages['did_reaction']
+        emoji = discord.utils.find(lambda x : requested in str(x), self.bot.emojis)
+        await ctx.message.add_reaction(MyCog.messages['did_reaction'])
 
     @commands.command(help='Shows stats for a user')
     async def stats(self, ctx, username=''):
