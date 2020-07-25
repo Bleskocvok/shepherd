@@ -16,6 +16,7 @@ class MyCog(commands.Cog):
         'invalid_time' : '```Incorrect time format\nCorrect format is \'XX:XX\'```',
         'status' : '```Scheduled for {}:{}```',
         'not_status' : '```Not scheduled```',
+        'stats' : '```{} | {}```',
     }
 
     def __init__(self, bot, database : Database):
@@ -62,7 +63,7 @@ class MyCog(commands.Cog):
         self.scheduler.remove(ID)
         await ctx.send(MyCog.messages['cancelled'].format(ctx.message.channel.name))
 
-    @commands.command(help='Prints current schedule')
+    @commands.command(help='Shows current schedule')
     async def status(self, ctx):
         ID = ctx.message.channel.id
         found = self.database.get_channels().get(ID, None)
@@ -72,13 +73,27 @@ class MyCog(commands.Cog):
         else:
             await ctx.send(MyCog.messages['not_status'])
 
-    @commands.command(help='[To be done] Stores the number of pushups you did')
+    @commands.command(help='Stores the number of pushups you did')
     async def did(self, ctx, count : int):
-        pass
+        self.database.add_user_stats(ctx.message.author.id, count)
 
-    @commands.command(help='[To be done]')
-    async def stats(self, ctx, name):
-        pass
+    @commands.command(help='Shows stats for a user')
+    async def stats(self, ctx, username=''):
+        if len(username) == 0:
+            username = ctx.message.author.name
+        id = discord.utils.get(ctx.message.channel.members, name=username).id
+        result = self.database.get_user_stats(id)
+        await ctx.send(MyCog.messages['stats'].format(username, result))
+
+    @commands.command(help='Shows stats for all users in current channel')
+    async def allstats(self, ctx, username=''):
+        result = '```'
+        max_len = len(max(ctx.message.channel.members, key=lambda x : len(x.name)).name) + 1
+        for mem in ctx.message.channel.members:
+            data = self.database.get_user_stats(mem.id)
+            result += '{} | {}'.format(mem.name.ljust(max_len), data) + '\n'
+        result += '```'
+        await ctx.send(result)
 
     def correct_time(self, time):
         nums = '0123456789'
@@ -110,8 +125,3 @@ client = commands.Bot(command_prefix='!')
 client.add_cog(MyCog(client, data))
 client.run(token)
 
-'''
-@client.event
-async def on_command_error(ctx, error):
-    print(error)
-'''

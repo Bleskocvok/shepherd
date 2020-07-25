@@ -9,10 +9,9 @@ class Database:
         # create folder if it doesn't exist
         if not os.path.isdir(folder):
             os.mkdir(folder)
-        # load channels
-        self.ensure_file('channels.txt')
-        with open(folder + '/channels.txt') as file:
-            self.channels = ast.literal_eval(file.read())
+        # load channels and user data
+        self.channels = self.load('channels.txt')
+        self.users = self.load('users.txt')
 
     def get_channels(self):
         return self.channels
@@ -25,15 +24,26 @@ class Database:
         self.channels[ID] = time
         self.save(self.channels, 'channels.txt')
 
-    def get_user_stats(self, user):
-        pass
+    def get_user_stats(self, ID):
+        return self.users.get(ID, [])
 
-    def get_channel_stats(self, channel):
-        pass
+    def add_user_stats(self, ID, value):
+        self.users.setdefault(ID, []).append(value)
+        self.save(self.users, 'users.txt')
+
+    def edit_last_stats(self, ID, value):
+        stats = self.get_user_stats(ID)
+        if len() > 0:
+            stats[-1] = value
 
     def save(self, struct, fname):
         with open(self.folder + "/" + fname, 'w') as f:
             f.write(str(struct))
+
+    def load(self, fname):
+        self.ensure_file(fname)
+        with open(self.folder + '/' + fname) as f:
+            return ast.literal_eval(f.read())
 
     def ensure_file(self, fname):
         '''Creates file if it doesn\'t exist'''
