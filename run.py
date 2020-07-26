@@ -35,6 +35,7 @@ class MyCog(commands.Cog):
         for mem in chn.members:
             self.database.add_user_stats(mem.id, 0)
         # some coroutine hackery, so that this function (job) doesn't have to be async
+        # notifies everyone for exercise!
         future  = asyncio.run_coroutine_threadsafe(chn.send('@everyone Exercise time!'), self.loop)
         future.result()
 
@@ -79,7 +80,8 @@ class MyCog(commands.Cog):
         else:
             await ctx.send(MyCog.messages['not_status'])
 
-    @commands.command(help='Stores the number of pushups you did')
+    @commands.command(help='Stores the number of pushups you did', description='Current exercise session \
+has to have been announced in order for your score to apply (otherwise it\'s applied to a previous session).')
     async def did(self, ctx, count : int):
         # set last value to count
         self.database.edit_last_stats(ctx.message.author.id, count)
@@ -96,7 +98,7 @@ class MyCog(commands.Cog):
         result = self.database.get_user_stats(id)
         await ctx.send(MyCog.messages['stats'].format(username, result))
 
-    @commands.command(help='Shows stats for all users in current channel')
+    @commands.command(help='Shows stats for all users in the current channel')
     async def allstats(self, ctx, username=''):
         result = '```'
         max_len = len(max(ctx.message.channel.members, key=lambda x : len(x.name)).name) + 1
