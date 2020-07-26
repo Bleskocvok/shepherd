@@ -24,15 +24,15 @@ class Database:
         self.channels[ID] = time
         self.save(self.channels, 'channels.txt')
 
-    def get_user_stats(self, ID):
-        return self.users.get(ID, [])
+    def get_user_stats(self, ID, channel):
+        return self.users.get((ID, channel), [])
 
-    def add_user_stats(self, ID, value):
-        self.users.setdefault(ID, []).append(value)
+    def add_user_stats(self, ID, channel, value):
+        self.users.setdefault((ID, channel), []).append(value)
         self.save(self.users, 'users.txt')
 
-    def edit_last_stats(self, ID, value):
-        stats = self.get_user_stats(ID)
+    def edit_last_stats(self, ID, channel, value):
+        stats = self.get_user_stats(ID, channel)
         if len(stats) > 0:
             stats[-1] = value
             self.save(self.users, 'users.txt')

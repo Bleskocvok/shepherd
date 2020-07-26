@@ -33,7 +33,7 @@ class MyCog(commands.Cog):
             return
         # add zero for all current members
         for mem in chn.members:
-            self.database.add_user_stats(mem.id, 0)
+            self.database.add_user_stats(mem.id, ID, 0)
         # some coroutine hackery, so that this function (job) doesn't have to be async
         # notifies everyone for exercise!
         future  = asyncio.run_coroutine_threadsafe(chn.send('@everyone Exercise time!'), self.loop)
@@ -84,7 +84,8 @@ class MyCog(commands.Cog):
 has to have been announced in order for your score to apply (otherwise it\'s applied to a previous session).')
     async def did(self, ctx, count : int):
         # set last value to count
-        self.database.edit_last_stats(ctx.message.author.id, count)
+        chn = ctx.message.channel
+        self.database.edit_last_stats(ctx.message.author.id, chn.id, count)
         # add funny reaction :)
         requested = MyCog.messages['did_reaction']
         emoji = discord.utils.find(lambda x : requested in str(x), self.bot.emojis)
@@ -94,16 +95,18 @@ has to have been announced in order for your score to apply (otherwise it\'s app
     async def stats(self, ctx, username=''):
         if len(username) == 0:
             username = ctx.message.author.name
-        id = discord.utils.get(ctx.message.channel.members, name=username).id
-        result = self.database.get_user_stats(id)
+        chn = ctx.message.channel
+        id = discord.utils.get(chn.members, name=username).id
+        result = self.database.get_user_stats(id, chn.id)
         await ctx.send(MyCog.messages['stats'].format(username, result))
 
     @commands.command(help='Shows stats for all users in the current channel')
     async def allstats(self, ctx, username=''):
         result = '```'
-        max_len = len(max(ctx.message.channel.members, key=lambda x : len(x.name)).name) + 1
-        for mem in ctx.message.channel.members:
-            data = self.database.get_user_stats(mem.id)
+        chn = ctx.message.channel
+        max_len = len(max(chn.members, key=lambda x : len(x.name)).name) + 1
+        for mem in chn.members:
+            data = self.database.get_user_stats(mem.id, chn.id)
             result += '{} | {}'.format(mem.name.ljust(max_len), data) + '\n'
         result += '```'
         await ctx.send(result)
