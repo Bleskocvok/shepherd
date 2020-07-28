@@ -21,10 +21,10 @@ class ShepherdCog(commands.Cog):
         'did_reaction' : '\N{FLEXED BICEPS}',
     }
 
-    def __init__(self, bot, database : Database):
+    def __init__(self, bot, database : Database, timezone : int = 0):
         self.bot = bot
         self.database = database
-        self.scheduler = Scheduler()
+        self.scheduler = Scheduler(timezone)
 
     def job(self, ID):
         chn = self.bot.get_channel(ID)

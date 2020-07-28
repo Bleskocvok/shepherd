@@ -5,10 +5,11 @@ from threading import Thread
 
 
 class Scheduler:
-    def __init__(self):
+    def __init__(self, timezone : int = 0):
         self.scheduled = {}
         self.running = True
         self.thread = None
+        self.timezone = timezone
 
     def add(self, ID, time, job):
         self.scheduled[ID] = (time, job)
@@ -37,7 +38,7 @@ class Scheduler:
                 for ID, entry in self.scheduled.items():
                     t, job = entry
                     h, m = t
-                    if now.hour == h and now.minute == m:
+                    if now.hour + self.timezone == h and now.minute == m:
                         job(ID)
             last = (now.hour, now.minute)
             # sleep for 30 seconds, finer granularity not needed
