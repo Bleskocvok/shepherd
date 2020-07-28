@@ -18,7 +18,7 @@ class Scheduler:
 
     def stop(self):
         self.running = False
-        if self.thread != None:
+        if self.thread is not None:
             self.thread.join()
         self.thread = None
 
