@@ -35,6 +35,9 @@ class ShepherdCog(commands.Cog):
             self.database.add_user_stats(mem.id, ID, 0)
         # some coroutine hackery, so that this function (job) doesn't have to be async
         # notifies everyone for exercise!
+        if self.loop.is_closed():
+            self.loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(self.loop)
         future  = asyncio.run_coroutine_threadsafe(chn.send('@everyone Exercise time!'), self.loop)
         future.result()
 

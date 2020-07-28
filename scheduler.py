@@ -40,7 +40,7 @@ class Scheduler:
                     if now.hour == h and now.minute == m:
                         job(ID)
             last = (now.hour, now.minute)
-            # sleep for 5 seconds, finer granularity not needed
-            time.sleep(5)
+            # sleep for 30 seconds, finer granularity not needed
+            time.sleep(30)
 
 
