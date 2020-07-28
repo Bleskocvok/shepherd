@@ -14,7 +14,8 @@ class Scheduler:
         self.scheduled[ID] = (time, job)
 
     def remove(self, ID):
-        self.scheduled.pop(ID)
+        if ID in self.scheduled:
+            self.scheduled.pop(ID)
 
     def stop(self):
         self.running = False
@@ -39,7 +40,7 @@ class Scheduler:
                     if now.hour == h and now.minute == m:
                         job(ID)
             last = (now.hour, now.minute)
-            # sleep for 30 seconds, finer granularity not needed
-            time.sleep(30)
+            # sleep for 5 seconds, finer granularity not needed
+            time.sleep(5)
 
 

@@ -17,7 +17,8 @@ class Database:
         return self.channels
 
     def remove_channel(self, ID : int):
-        self.channels.pop(ID)
+        if ID in self.channels:
+            self.channels.pop(ID)
         self.save(self.channels, 'channels.txt')
 
     def set_channel(self, ID : int, time : (int, int)):
