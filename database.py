@@ -3,9 +3,11 @@ import os
 import ast
 
 class Database:
-    def __init__(self, folder):
+    def __init__(self, folder, load_routine=None, save_routine=None):
         self.channels = {}
         self.folder = folder
+        self.load_routine = load_routine
+        self.save_routine = save_routine
         # create folder if it doesn't exist
         if not os.path.isdir(folder):
             os.mkdir(folder)
@@ -39,17 +41,24 @@ class Database:
             self.save(self.users, 'users.txt')
 
     def save(self, struct, fname):
-        with open(self.folder + "/" + fname, 'w') as f:
+        with open(self.folder + '/' + fname, 'w') as f:
             f.write(str(struct))
+        if self.save_routine is not None:
+            self.save_routine(self.folder + '/' + fname)
 
     def load(self, fname):
+        if self.load_routine is not None:
+            self.load_routine(self.folder + '/' + fname)
         self.ensure_file(fname)
-        with open(self.folder + '/' + fname) as f:
-            return ast.literal_eval(f.read())
+        try:
+            with open(self.folder + '/' + fname) as f:
+                return ast.literal_eval(f.read())
+        except:
+            return {}
 
     def ensure_file(self, fname):
         '''Creates file if it doesn\'t exist'''
-        fname = self.folder + "/" + fname
+        fname = self.folder + '/' + fname
         if not os.path.isfile(fname):
             with open(fname, 'w') as f:
                 f.write('{}') 

@@ -1,5 +1,7 @@
 # very important to keep that secret a secret
 secret*
+*.env
 
 data
 *pycache*
+
