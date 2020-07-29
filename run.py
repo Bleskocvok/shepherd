@@ -56,7 +56,7 @@ username = os.getenv('FTP_USERNAME', username)
 password = os.getenv('FTP_PASSWORD', password)
 
 # start database in the data folder
-# if ftp is activated, add load and save routines
+# if ftp is activated add load and save routines
 data = None
 if server is None:
     data = Database('data')

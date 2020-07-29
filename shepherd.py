@@ -60,17 +60,19 @@ class ShepherdCog(commands.Cog):
             await ctx.send(ShepherdCog.messages['invalid_time'])
             return
         t = (int(time[0:2]), int(time[3:5]))
+        # message first, save to database later (might be slow)
+        await ctx.send(ShepherdCog.messages['scheduled'].format(time, ctx.message.channel.name))
         ID = ctx.message.channel.id
         self.database.set_channel(ID, t)
         self.scheduler.add(ID, t, self.job)
-        await ctx.send(ShepherdCog.messages['scheduled'].format(time, ctx.message.channel.name))
 
     @commands.command(help='Cancels scheduled exercise')
     async def cancel(self, ctx):
+        # message first, save to database later (might be slow)
+        await ctx.send(ShepherdCog.messages['cancelled'].format(ctx.message.channel.name))
         ID = ctx.message.channel.id
         self.database.remove_channel(ID)
         self.scheduler.remove(ID)
-        await ctx.send(ShepherdCog.messages['cancelled'].format(ctx.message.channel.name))
 
     @commands.command(help='Shows current schedule')
     async def status(self, ctx):
