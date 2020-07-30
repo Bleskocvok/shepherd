@@ -90,7 +90,7 @@ has to have been announced in order for your score to apply (otherwise it\'s app
         # set last value to count
         chn = ctx.message.channel
         self.database.edit_last_stats(ctx.message.author.id, chn.id, count)
-        # add funny reaction :)
+        # add funny reaction
         requested = ShepherdCog.messages['did_reaction']
         emoji = discord.utils.find(lambda x : requested in str(x), self.bot.emojis)
         await ctx.message.add_reaction(ShepherdCog.messages['did_reaction'])

@@ -3,11 +3,9 @@ import os
 import ast
 
 class Database:
-    def __init__(self, folder, load_routine=None, save_routine=None):
+    def __init__(self, folder):
         self.channels = {}
         self.folder = folder
-        self.load_routine = load_routine
-        self.save_routine = save_routine
         # create folder if it doesn't exist
         if not os.path.isdir(folder):
             os.mkdir(folder)
@@ -43,12 +41,8 @@ class Database:
     def save(self, struct, fname):
         with open(self.folder + '/' + fname, 'w') as f:
             f.write(str(struct))
-        if self.save_routine is not None:
-            self.save_routine(self.folder + '/' + fname)
 
     def load(self, fname):
-        if self.load_routine is not None:
-            self.load_routine(self.folder + '/' + fname)
         self.ensure_file(fname)
         try:
             with open(self.folder + '/' + fname) as f:
