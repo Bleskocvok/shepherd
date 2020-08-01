@@ -1,0 +1,3 @@
+[submodule "ftp-harvest"]
+	path = ftp-harvest
+	url = https://github.com/Bleskocvok/ftp-harvest.git
