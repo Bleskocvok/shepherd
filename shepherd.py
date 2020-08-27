@@ -21,10 +21,13 @@ class ShepherdCog(commands.Cog):
         'did_reaction' : '\N{FLEXED BICEPS}',
     }
 
-    def __init__(self, bot, database : Database, timezone : int = 0):
+    def __init__(self,
+            bot,
+            database : Database,
+            scheduler : Scheduler):
         self.bot = bot
         self.database = database
-        self.scheduler = Scheduler(timezone)
+        self.scheduler = scheduler
 
     def job(self, ID):
         chn = self.bot.get_channel(ID)
@@ -42,8 +45,12 @@ class ShepherdCog(commands.Cog):
         future.result()
 
     @commands.Cog.listener()
+    async def on_command_error(self, ctx, error):
+        print('ERROR:', error)
+
+    @commands.Cog.listener()
     async def on_ready(self):
-        print('Connected as {}'.format(self.bot.user.name))
+        print('Connected as {}'.format(self.bot.user.name), flush=True)
         # add already scheduled notifs
         for ID, t in self.database.get_channels().items():
             self.scheduler.add(ID, t, self.job)
