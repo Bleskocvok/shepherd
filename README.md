@@ -7,7 +7,7 @@ Discord BOT for scheduling exercise.
 python3 run.py
 ```
 
-# Docker
+### Docker
 
 ```bash
 docker build -t shepherd .
