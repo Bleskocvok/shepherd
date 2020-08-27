@@ -7,29 +7,20 @@ Discord BOT for scheduling exercise.
 python3 run.py
 ```
 
+# Docker
+
+```bash
+docker build -t shepherd .
+docker run shepherd
+```
+
 ## Usage
 
-```
-!help
-```
-```
-!schedule XX:XX
-```
-```
-!cancel
-```
-```
-!status
-```
-```
-!did N
-```
-```
-!stats
-```
-```
-!stats NAME
-```
-```
-!allstats
-```
+`!help`
+`!schedule XX:XX`
+`!cancel`
+`!status`
+`!did N`
+`!stats`
+`!stats NAME`
+`!allstats`
