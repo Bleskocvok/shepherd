@@ -74,6 +74,10 @@ class ShepherdCog(commands.Cog):
             '\N{FLEXED BICEPS}',
             '\N{SMILING FACE WITH SUNGLASSES}'))
 
+    @commands.command(help='Prints current time')
+    async def time(self, ctx):
+        await ctx.send('```{}```'.format(self.scheduler.get_time()))
+
     @commands.command(help='Schedules a time for exercise')
     async def schedule(self, ctx, time):
         time = time.strip()

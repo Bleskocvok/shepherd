@@ -30,18 +30,26 @@ class Scheduler:
         self.thread = Thread(target=self._run)
         self.thread.start()
 
+    def get_time(self):
+        now = self.now()
+        return '{}:{}'.format(now[0], str(now[1]).rjust(2, '0'))
+
+    def now(self):
+        t = datetime.now().time()
+        return ((t.hour + self.timezone) % 24, t.minute)
+
     def _run(self):
         last = (-1, -1)
         while self.running:
-            now = datetime.now().time()
+            now = self.now()
             lh, lm = last
-            if lm != now.hour and lm != now.minute:
+            if lm != now[0] and lm != now[1]:
                 for ID, entry in self.scheduled.items():
                     t, job = entry
                     h, m = t
-                    if now.hour + self.timezone == h and now.minute == m:
+                    if now[0] == h and now[1] == m:
                         job(ID)
-            last = (now.hour, now.minute)
+            last = (now[0], now[1])
             # sleep for x seconds
             time.sleep(self.granularity)
 
