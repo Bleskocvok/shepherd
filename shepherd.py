@@ -16,6 +16,13 @@ class ShepherdCog(commands.Cog):
         'status' : '```Scheduled for {}:{}```',
         'not_status' : '```Not scheduled```',
         'stats' : '```{} | {}```',
+        'buff' : '\
+{0}===={1}==={1}===={0}\n\
+                 {2}{3}{2}\n'.format(
+            '\N{WHITE LARGE SQUARE}',
+            '\N{RAISED FIST}',
+            '\N{FLEXED BICEPS}',
+            '\N{SMILING FACE WITH SUNGLASSES}'),
 
         # was kinda difficult to find how to use emoji reactions
         'did_reaction' : '\N{FLEXED BICEPS}',
@@ -57,6 +64,15 @@ class ShepherdCog(commands.Cog):
         self.scheduler.run()
         # load this thing (it's needed)
         self.loop = asyncio.get_event_loop()
+
+    @commands.command(help='')
+    async def buff(self, ctx):
+        await ctx.send('{0}===={1}==={1}===={0}\n\
+                 {2} {3} {2}\n'.format(
+            '\N{WHITE LARGE SQUARE}',
+            '\N{RAISED FIST}',
+            '\N{FLEXED BICEPS}',
+            '\N{SMILING FACE WITH SUNGLASSES}'))
 
     @commands.command(help='Schedules a time for exercise')
     async def schedule(self, ctx, time):
