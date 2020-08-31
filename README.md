@@ -11,7 +11,7 @@ python3 run.py
 
 ```bash
 docker build -t shepherd .
-docker run shepherd
+docker run --rm shepherd
 ```
 
 ## Usage
