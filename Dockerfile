@@ -12,5 +12,5 @@ COPY . .
 
 RUN pip3 install -r requirements.txt
 
-CMD python3 ftp-harvest/run.py -l && { python3 ftp-harvest/run.py -b 7 & python3 ./main.py; }
+CMD python3 -u ftp-harvest/run.py -l && { python3 -u ftp-harvest/run.py -b 7 & python3 -u ./main.py; }
 
