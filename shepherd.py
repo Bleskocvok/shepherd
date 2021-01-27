@@ -13,7 +13,7 @@ class ShepherdCog(commands.Cog):
         'scheduled' : '```Scheduled exercise for {} in channel #{}```',
         'cancelled' : '```Cancelled scheduled exercise for channel {}```',
         'invalid_time' : '```Incorrect time format\nCorrect format is \'XX:XX\'```',
-        'status' : '```Scheduled for {}:{}```',
+        'status' : '```Scheduled for {}:{}\nTime: {}```',
         'not_status' : '```Not scheduled```',
         'stats' : '```{} | {}```',
         'buff' : '\
@@ -107,7 +107,7 @@ class ShepherdCog(commands.Cog):
         found = self.database.get_channels().get(ID, None)
         if not found is None:
             h, m = found
-            await ctx.send(ShepherdCog.messages['status'].format(h, m))
+            await ctx.send(ShepherdCog.messages['status'].format(h, m, str(self.scheduler.now())))
         else:
             await ctx.send(ShepherdCog.messages['not_status'])
 
