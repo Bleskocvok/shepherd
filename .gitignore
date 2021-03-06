@@ -4,6 +4,7 @@ secret*
 
 # saved data
 /data/
+/data-backup/
 .harvestcache
 
 # cache garbage
