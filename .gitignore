@@ -2,6 +2,10 @@
 secret*
 *.env
 
-data
+# saved data
+/data/
+.harvestcache
+
+# cache garbage
 *pycache*
 
