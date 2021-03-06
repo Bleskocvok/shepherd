@@ -1,18 +1,27 @@
 # Shepherd
 Discord BOT for scheduling exercise.
 
-## Running the bot
+## How to run
+
+First clone the repository.
 
 ```bash
-python3 run.py
+git clone --recurse-submodules https://github.com/Bleskocvok/shepherd.git
 ```
 
-### Docker
+Then you can either run manually or using docker.
 
-```bash
-docker build -t shepherd .
-docker run --rm shepherd
-```
+- Run manually
+
+  ```bash
+  python3 run.py
+  ```
+
+- Using Docker
+  ```bash
+  docker build -t shepherd . # builds it
+  docker run --rm shepherd   # runs it
+  ```
 
 ## Usage
 
@@ -22,5 +31,6 @@ docker run --rm shepherd
 `!status`
 `!did N`
 `!stats`
+`!buff`
 `!stats NAME`
 `!allstats`
