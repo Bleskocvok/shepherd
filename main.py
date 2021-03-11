@@ -30,8 +30,11 @@ def main():
     data = Database('data')
     sched = Scheduler(timezone)
 
+    # turn on intents to acess channel.members (important)
+    intents = discord.Intents.default()
+    intents.members = True
     # start the client
-    client = commands.Bot(command_prefix='!')
+    client = commands.Bot(command_prefix='!', intents=intents)
     client.add_cog(ShepherdCog(client, data, sched))
     client.run(token)
 
