@@ -137,7 +137,8 @@ has to have been announced in order for your score to apply (otherwise it\'s app
     @commands.command(help='Shows stats for all users in the current channel')
     async def allstats(self, ctx):
         chn = ctx.message.channel
-        await ctx.send(self.str_members_stats(chn, chn.members))
+        members = list(filter(lambda x: not x.bot, chn.members))
+        await ctx.send(self.str_members_stats(chn, members))
 
     def str_members_stats(self,
             chn: discord.TextChannel,
