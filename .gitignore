@@ -10,3 +10,6 @@ secret*
 # cache garbage
 *pycache*
 
+
+# editor garbage
+/.vscode/

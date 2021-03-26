@@ -2,6 +2,7 @@
 import discord
 import asyncio
 from discord.ext import commands
+from typing import Optional, List
 
 # my imports
 from database import Database
@@ -9,13 +10,14 @@ from scheduler import Scheduler
 
 
 class ShepherdCog(commands.Cog):
-    messages = {
+    StatsMax = 7
+    Messages = {
         'scheduled' : '```Scheduled exercise for {} in channel #{}```',
         'cancelled' : '```Cancelled scheduled exercise for channel {}```',
         'invalid_time' : '```Incorrect time format\nCorrect format is \'XX:XX\'```',
         'status' : '```Scheduled for {}:{}\nTime: {}```',
         'not_status' : '```Not scheduled```',
-        'stats' : '```{} | {}```',
+        # 'stats' : '```{} | {}```',
         'buff' : '\
 {0}===={1}==={1}===={0}\n\
                  {2}{3}{2}\n'.format(
@@ -84,11 +86,12 @@ class ShepherdCog(commands.Cog):
         if time[len(time) - 1] == '\n':
             time = time[:len(time) - 1]
         if not self.correct_time(time):
-            await ctx.send(ShepherdCog.messages['invalid_time'])
+            await ctx.send(ShepherdCog.Messages['invalid_time'])
             return
         t = (int(time[0:2]), int(time[3:5]))
         # message first, save to database later (might be slow)
-        await ctx.send(ShepherdCog.messages['scheduled'].format(time, ctx.message.channel.name))
+        await ctx.send(ShepherdCog.Messages['scheduled']
+                .format(time, ctx.message.channel.name))
         ID = ctx.message.channel.id
         self.database.set_channel(ID, t)
         self.scheduler.add(ID, t, self.job)
@@ -96,7 +99,8 @@ class ShepherdCog(commands.Cog):
     @commands.command(help='Cancels scheduled exercise')
     async def cancel(self, ctx):
         # message first, save to database later (might be slow)
-        await ctx.send(ShepherdCog.messages['cancelled'].format(ctx.message.channel.name))
+        await ctx.send(ShepherdCog.Messages['cancelled']
+                .format(ctx.message.channel.name))
         ID = ctx.message.channel.id
         self.database.remove_channel(ID)
         self.scheduler.remove(ID)
@@ -107,42 +111,74 @@ class ShepherdCog(commands.Cog):
         found = self.database.get_channels().get(ID, None)
         if not found is None:
             h, m = found
-            await ctx.send(ShepherdCog.messages['status'].format(h, m, str(self.scheduler.now())))
+            await ctx.send(ShepherdCog.Messages['status']
+                    .format(h, m, str(self.scheduler.now())))
         else:
-            await ctx.send(ShepherdCog.messages['not_status'])
+            await ctx.send(ShepherdCog.Messages['not_status'])
 
     @commands.command(help='Stores the number of pushups you did', description='Current exercise session \
-has to have been announced in order for your score to apply (otherwise it\'s applied to a previous session).')
+has to have been announced in order for your score to apply (otherwise it\'s applied to the previous session).')
     async def did(self, ctx, count : int):
         # set last value to count
         chn = ctx.message.channel
         self.database.edit_last_stats(ctx.message.author.id, chn.id, count)
         # add funny reaction
-        requested = ShepherdCog.messages['did_reaction']
+        requested = ShepherdCog.Messages['did_reaction']
         emoji = discord.utils.find(lambda x : requested in str(x), self.bot.emojis)
-        await ctx.message.add_reaction(ShepherdCog.messages['did_reaction'])
+        await ctx.message.add_reaction(ShepherdCog.Messages['did_reaction'])
 
     @commands.command(help='Shows stats for a user')
-    async def stats(self, ctx, username=''):
-        if len(username) == 0:
-            username = ctx.message.author.name
+    async def stats(self, ctx, user: Optional[discord.Member] = None):
+        if user is None:
+            user = ctx.author
         chn = ctx.message.channel
-        id = discord.utils.get(chn.members, name=username).id
-        result = self.database.get_user_stats(id, chn.id)
-        await ctx.send(ShepherdCog.messages['stats'].format(username, result))
+        await ctx.send(self.str_members_stats(chn, [user]))
 
     @commands.command(help='Shows stats for all users in the current channel')
-    async def allstats(self, ctx, username=''):
-        result = '```'
+    async def allstats(self, ctx):
         chn = ctx.message.channel
-        max_len = len(max(chn.members, key=lambda x : len(x.name)).name) + 1
-        for mem in chn.members:
+        await ctx.send(self.str_members_stats(chn, chn.members))
+
+    def str_members_stats(self,
+            chn: discord.TextChannel,
+            members: List[discord.Member]):
+        values = ''
+        max_len = len(max(members, key=lambda x : len(x.name)).name)
+        for mem in members:
             data = self.database.get_user_stats(mem.id, chn.id)
-            result += '{} | {}'.format(mem.name.ljust(max_len), data) + '\n'
-        result += '```'
-        await ctx.send(result)
+            values += ShepherdCog.str_data(max_len, mem.name, data)
+        header = ShepherdCog.str_header(values)
+        return f'```\n{header}{values}\n```'
+
+    @staticmethod
+    def str_header(values):
+        maxes = []
+        elements = [l.split('|') for l in values.split('\n')]
+        for i in range(3):
+            maxes.append(max([ len(el[min(i, len(el)-1)]) for el in elements ]))
+        res = 'name'.ljust(maxes[0]-1) \
+            + ' | avg'.ljust(maxes[1]+1) \
+            + ' | values'.ljust(maxes[2]-1) \
+            + '\n'
+        res += '=' * (2 + sum(maxes)) \
+            + '\n'
+        return res
+
+    @staticmethod
+    def str_data(maxlen, name, data):
+        avg = 0
+        m = ShepherdCog.StatsMax
+        size = min(len(data), m)
+        last = data[len(data)-size:]
+
+        for i in range(size):
+            avg += last[i]
+        avg: float = avg / max(size, 1)
+        str_avg = f'{avg:.2g}'
+        return f'{name.ljust(maxlen)}  | {str_avg.ljust(6)} | {last}\n'
 
     def correct_time(self, time):
+        # okay, this is terrible o_O
         nums = '0123456789'
         if len(time) != 5 or time[2] != ':':
             return False
