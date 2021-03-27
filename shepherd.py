@@ -174,9 +174,20 @@ has to have been announced in order for your score to apply (otherwise it\'s app
 
         for i in range(size):
             avg += last[i]
-        avg: float = avg / max(size, 1)
+        avg: float = avg / float(max(size, 1))
         str_avg = f'{avg:.2g}'
-        return f'{name.ljust(maxlen)}  | {str_avg.ljust(6)} | {last}\n'
+        return f'{name.ljust(maxlen)}  | {str_avg.ljust(6)} | {ShepherdCog.str_list(last)}\n'
+
+    @staticmethod
+    def str_list(lst):
+        if len(lst) == 0:
+            return "none"
+        res = ''
+        delim = ''
+        for el in lst:
+            res += f'{delim}{el}'
+            delim = ' '
+        return res
 
     def correct_time(self, time):
         # okay, this is terrible o_O
