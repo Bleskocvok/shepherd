@@ -154,15 +154,14 @@ has to have been announced in order for your score to apply (otherwise it\'s app
     @staticmethod
     def str_header(values):
         maxes = []
-        elements = [l.split('|') for l in values.split('\n')]
+        elements = [l.split('│') for l in values.split('\n')]
         for i in range(3):
             maxes.append(max([ len(el[min(i, len(el)-1)]) for el in elements ]))
         res = 'name'.ljust(maxes[0]-1) \
-            + ' | avg'.ljust(maxes[1]+1) \
-            + ' | values'.ljust(maxes[2]-1) \
+            + ' │ avg'.ljust(maxes[1]+1) \
+            + ' │ values'.ljust(maxes[2]-1) \
             + '\n'
-        res += '=' * (2 + sum(maxes)) \
-            + '\n'
+        res += '{}┼{}┼{}'.format('─' * maxes[0], '─' * maxes[1], '─' * maxes[2])
         return res
 
     @staticmethod
@@ -176,7 +175,7 @@ has to have been announced in order for your score to apply (otherwise it\'s app
             avg += last[i]
         avg: float = avg / float(max(size, 1))
         str_avg = f'{avg:.2g}'
-        return f'{name.ljust(maxlen)}  | {str_avg.ljust(6)} | {ShepherdCog.str_list(last)}\n'
+        return f'{name.ljust(maxlen)}  │ {str_avg.ljust(6)} │ {ShepherdCog.str_list(last)}\n'
 
     @staticmethod
     def str_list(lst):
