@@ -161,7 +161,7 @@ has to have been announced in order for your score to apply (otherwise it\'s app
             + ' │ avg'.ljust(maxes[1]+1) \
             + ' │ values'.ljust(maxes[2]-1) \
             + '\n'
-        res += '{}┼{}┼{}'.format('─' * maxes[0], '─' * maxes[1], '─' * maxes[2])
+        res += '{}┼{}┼{}\n'.format('─' * maxes[0], '─' * maxes[1], '─' * maxes[2])
         return res
 
     @staticmethod
