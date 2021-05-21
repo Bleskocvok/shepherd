@@ -116,8 +116,10 @@ class ShepherdCog(commands.Cog):
         else:
             await ctx.send(ShepherdCog.Messages['not_status'])
 
-    @commands.command(help='Stores the number of pushups you did', description='Current exercise session \
-has to have been announced in order for your score to apply (otherwise it\'s applied to the previous session).')
+    @commands.command(help='Stores the number of pushups you did',
+        description='Current exercise session has to have been announced'
+            ' in order for your score to apply (otherwise it\'s applied'
+            ' to the previous session).')
     async def did(self, ctx, count : int):
         # set last value to count
         chn = ctx.message.channel
@@ -184,6 +186,8 @@ has to have been announced in order for your score to apply (otherwise it\'s app
         res = ''
         delim = ''
         for el in lst:
+            if el == 0:
+                el = '💩'
             res += f'{delim}{el}'
             delim = ' '
         return res
