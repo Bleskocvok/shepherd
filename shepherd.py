@@ -188,7 +188,7 @@ class ShepherdCog(commands.Cog):
         for el in lst:
             if el == 0:
                 el = '💩'
-            res += f'{delim}{str(el).rjust(2)}'
+            res += f'{delim}{el}'
             delim = ' '
         return res
 
